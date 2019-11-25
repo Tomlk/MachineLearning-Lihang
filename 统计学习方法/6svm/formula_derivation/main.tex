@@ -1,0 +1,288 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[UTF8]{ctex} %中文支持
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{graphics}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{ulem}
+\usepackage{color}
+\usepackage[backend=bibtex,
+                style=authoryear,
+                natbib=true, 
+                style=numeric-comp
+                ]{biblatex}    
+\usepackage[english]{babel}
+\usepackage{filecontents}
+\begin{filecontents*}{\jobname.bib}
+  @book{ASH,
+    author = {Seiffert, U. and Wech, L.},
+    year = {2003},
+    title = {Automotive Safety Handbook},
+  }
+\end{filecontents*}
+\addbibresource{\jobname.bib}
+\begin{document}
+\renewcommand\maketitle{}
+\section{线性可分支持向量机(硬间隔最大化)}
+对于约束最优化问题：
+\begin{gather}   \label{eq:m}
+    \min\limits_{w,b} \frac{1}{2}||w||^2\\
+    s.t\quad y_i(w\cdot x_i+b)-1 \ge 0,\quad i=1,2,\dots,N  \label{eq:n}
+\end{gather}
+易知式(\ref{eq:n})满足等号“=”的样本点实例为{\color{red}支持向量}。
+
+运用拉格朗日乘数法，定义拉格朗日函数:
+\begin{align}
+    L(w,b,\alpha)&=\frac{1}{2}||w||^2-\sum_{i=1}^{N}\alpha_i\cdot(y_i (w\cdot x_i+b)-1)\\
+    &=\frac{1}{2}||w||^2-\sum_{i=1}^{N}\alpha_i y_i (w\cdot x_i+b)+\sum_{i=1}^{N}\alpha_i  \label{eq:1}
+\end{align}
+
+即该问题是来探究$\max\limits_{\alpha}\min\limits_{w,b}L(w,b,\alpha)$，因此需要先求$L(w,b,\alpha)$对$w,b$的极小，再求对$\alpha$的极大.
+
+(1)先求$L(w,b,\alpha)$对$w,b$的极小
+ 根据式(\ref{eq:1})分别对w,b求偏导数并令其等于0
+
+对w,
+\begin{gather}
+    \bigtriangledown_w L(w,b,\alpha)=w-\sum_{i=1}^{N}\alpha_i y_i x_i=0    
+\end{gather}
+对b,
+\begin{gather}
+    \bigtriangledown_b L(w,b,\alpha)=-\sum_{i=1}^{N}\alpha_i y_i=0    
+\end{gather}
+
+因此有
+\begin{gather}
+    w=\sum_{i=1}^{N}\alpha_i y_i x_i \label{eq:2} \\
+    \sum_{i=1}^{N}\alpha_i y_i=0    \label{eq:3}
+\end{gather}
+
+ 把式(\ref{eq:2})代入(\ref{eq:1})可得到如下公式:
+\begin{equation}
+    L(w,b,\alpha)=\frac{1}{2}\sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i \alpha_j y_i y_j (x_i\cdot x_j)-\sum_{i=1}^{N} \alpha_i y_i((\sum_{j=1}^{N}\alpha_j y_j x_j)\cdot x_i +b)+\sum_{i=1}^{N}\alpha_i  \label{eq:4}
+\end{equation}
+ 又因为式(\ref{eq:3})，因此式(\ref{eq:4})的第二式中$\sum_{i=1}^{N}\alpha_i y_ib=0$，因此有：
+\begin{align}
+    L(w,b,\alpha)&=\frac{1}{2}\sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i \alpha_j y_i y_j (x_i\cdot x_j)-\sum_{i=1}^{N} \alpha_i y_i((\sum_{j=1}^{N}\alpha_j y_j x_j)\cdot x_i )+\sum_{i=1}^{N}\alpha_i\\
+    &=\frac{1}{2}\sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i \alpha_j y_i y_j (x_i\cdot x_j)-\sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i \alpha_j y_i y_j (x_i\cdot x_j)+\sum_{i=1}^{N}\alpha_i\\
+    &=-\frac{1}{2}\sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i \alpha_j y_i y_j (x_i\cdot x_j)+\sum_{i=1}^{N}\alpha_i
+\end{align}
+即
+\begin{equation}
+    \min\limits_{w,b}L(w,b,\alpha)=-\frac{1}{2}\sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i \alpha_j y_i y_j (x_i\cdot x_j)+\sum_{i=1}^{N}\alpha_i
+\end{equation}
+
+(2)再求$\min\limits_{w,b}L(w,b,\alpha)$对$\alpha$的极大，即：
+\begin{gather}
+    \max\limits_{\alpha} \quad -\frac{1}{2}\sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i \alpha_j y_i y_j (x_i\cdot x_j)+\sum_{i=1}^{N}\alpha_i  \label{eq:5}\\
+    s.t \quad \sum_{i=1}^{N} \alpha_i y_i=0\\
+    \alpha_i \ge 0,\quad i=1,2,\dots,N
+\end{gather}
+
+将式(\ref{eq:5})的目标函数由求极大值转换为求极小值，就得到下面与之等价的对偶问题：
+\begin{gather}
+    \min\limits_{\alpha} \quad \frac{1}{2}\sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i \alpha_j y_i y_j (x_i\cdot x_j)-\sum_{i=1}^{N}\alpha_i  \\
+    s.t \quad \sum_{i=1}^{N} \alpha_i y_i=0\\
+    \alpha_i \ge 0,\quad i=1,2,\dots,N
+\end{gather}
+我们需要{\color{red}求解}(利用{\color{red}SMO}算法))得到最优解{\color{red} $\alpha^*=(\alpha_1^*,\alpha_2^*,\dots,\alpha_N^*)^T$}
+我们选择一个$\alpha_j^*>0$，
+这样我们能够求得原始目标优化问题(\ref{eq:m})的解为:
+
+\begin{gather}
+    w^*=\sum_{i=1}^{N}\alpha_i^* y_i x_i\\
+    b^*=y_j-\sum_{i=1}^{N}\alpha_i^* y_i(x_i\cdot x_j)
+\end{gather}
+
+于是可以求得分离超平面及分类决策函数
+\begin{gather}
+    w^*\cdot x+b^*=0\\
+    f(x)=sign(w^*\cdot x+b^*)
+\end{gather}
+
+\section{线性支持向量机(软间隔最大化)}
+其中凸二次优化的原始问题为：
+\begin{gather}  \label{eq:z}
+    \min\limits_{w,b,\xi} \quad \frac{1}{2}||w||^2+C\sum_{i=1}^{N}\xi_i\\
+    s.t.\quad y_i(w\cdot x_i+b)\ge1-\xi_i,\quad i=1,2,\dots,N\\
+    \xi_i\ge0,\quad i=1,2,\dots,N
+\end{gather}
+
+我们需要求解该原始问题(\ref{eq:z})的对偶问题,先写出拉格朗日函数：
+\begin{equation}  \label{eq:ll}
+    L(w,b,\xi,\alpha,\mu)=\frac{1}{2}||w||^2+C\sum_{i=1}^{N}\xi_i-\sum_{i=1}^{N}\alpha_i(y_i(w\cdot x_i)-1+\xi_i)-\sum_{i=1}^{N}\mu_i\xi_i
+\end{equation}
+其中，$\alpha_i\ge0,\mu_i\ge0$.
+
+与前面同理，先求$L(w,b,\xi,\alpha,\mu)$对$w,b,\xi$的极小：
+\begin{gather}
+    \bigtriangledown_w L(w,b,\xi,\alpha,\mu)=w-\sum_{i=1}^{N}\alpha_i y_i x_i=0\\
+    \bigtriangledown_b L(w,b,\xi,\alpha,\mu)=-\sum_{i=1}^{N}\alpha_i y_i=0 \\
+    \bigtriangledown_{\xi_i} L(w,b,\xi,\alpha,\mu)=C-\alpha_i -\mu_i=0
+\end{gather}
+这样，可以得到：
+\begin{gather}
+    w=\sum_{i=1}^{N}\alpha_i y_i x_i \label{eq:d1}\\ 
+    \sum_{i=1}^{N}\alpha_i y_i=0 \label{eq:d2}\\
+    C-\alpha_i-\mu_i=0 \label{eq:d3}
+\end{gather}
+
+将式（\ref{eq:d1}）,（\ref{eq:d2}）,（\ref{eq:d3}）代入式（\ref{eq:ll}），可得到
+\begin{equation}
+    \min\limits_{w,b,\xi} L(w,b,\xi,\alpha,\mu)=-\frac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N}\alpha_i \alpha_j y_i y_j(x_i\cdot x_j)+\sum_{i=1}^{N}
+\end{equation}
+再全对$\min\limits_{w,b,\xi} L(w,b,\xi,\alpha,\mu)$ 求$\alpha$ 的极大，即得到对偶问题：
+\begin{gather}
+    \max\limits_{\alpha}\quad -\frac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N}\alpha_i \alpha_j y_i y_j(x_i\cdot x_j)+\sum_{i=1}^{N}\alpha_i\\
+    s.t.\quad \sum_{i=1}^{N}\alpha_i y_i=0\\
+    C-\alpha_i-\mu_i=0   \label{eq:mu}\\
+    \alpha_i\ge0\\
+    \mu_i\ge0,\quad i=1,2,\dots,N
+\end{gather}
+利用式(\ref{eq:mu})消去$\mu_i$，可得到如下对偶问题：
+\begin{gather}    
+    \min\limits_{\alpha}\quad \frac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N}\alpha_i \alpha_j y_i y_j(x_i\cdot x_j)-\sum_{i=1}^{N}\alpha_i\\
+    s.t.\quad \sum_{i=1}^{N}\alpha_i y_i=0\\
+    0\le \alpha_i \le C,\quad i=1,2,\dots,N
+\end{gather}
+\uline{这里，C>0成为惩罚参数，一般由应用问题决定，C值大时对误分类的惩罚增大，C值小时对误分类的惩罚减小} 
+% \uline{这里，C>0成为惩罚参数，一般由应用问题决定，C值大时对误分类的惩罚增大，C值小时对误分类的惩罚减小}。
+
+目标是：{\color{red}使间隔尽量大同时使误分类点的个数尽量小}
+
+分类超平面及其决策函数与线性可分线性向量机的相似，只是分量选择为$0\le \alpha_j^* \le C$。
+\section{序列最小最优化算法(Sequential minimal optimization)SMO 算法来求解$\alpha$}
+SMO算法是一种启发式算法，如果所有变量的解都满足此最优问题的KKT条件(Karush-Kuhn-Tucker\ conditions)，那么这个最优化问题的解就得到了。
+
+在这里用非线性支持向量机学习算法：即SMO算法要求解如下凸二次优化问题：
+\begin{gather}    \label{eq:tuquestion}
+    \min\limits_{\alpha}\quad \frac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N}\alpha_i \alpha_j y_i y_j K(x_i,x_j)-\sum_{i=1}^{N}\alpha_i\\
+    s.t.\quad \sum_{i=1}^{N}\alpha_i y_i=0\\
+    0\le \alpha_i \le C,\quad i=1,2,\dots,N
+\end{gather}
+
+
+整个SMO算法包括两部分：
+
+1.{\color{red}求解两个变量的二次规划的解析方法}
+
+2.{\color{red}选择变量的启发式方法}
+
+\subsection{两个变量二次规划的求解方法}
+不失一般性，将假设选择的$\alpha_1$与$\alpha_2$作为自变量，而将其它$\alpha_i(i=3,4,...,N)$进行固定，这样的(\ref{eq:tuquestion})优化问题可以转写为
+\begin{gather}
+    \min\limits_{\alpha_1,\alpha_2}\quad W(\alpha_1,\alpha_2)=\frac{1}{2}\alpha_1^2 y_1^2 K_{11}+\frac{1}{2}\alpha_2^2 y_2^2 K_{22}+\frac{1}{2}\alpha_1 \alpha_2 y_1 y_2 K_{12}+\frac{1}{2} \alpha_2 \alpha_1 y_2 y_1 K_{21}-\sum_{i=1}^{N}\alpha_i \\+\frac{1}{2}\alpha_1 y_1 \sum_{i=3}^{N} y_i \alpha_i (K_{i1}+K_{1i})+\frac{1}{2} \alpha_2 y_2 \sum_{i=3}^{N} y_i \alpha_i (K_{i2}+K_{2i})+\frac{1}{2}\sum_{i=3}^{N}\sum_{j=3}^{N}\alpha_i \alpha_j y_i y_j K_{ij} 
+\end{gather}
+问题可以转换为
+\begin{gather}
+    \min\limits_{\alpha_1,\alpha_2}\quad W(\alpha_1,\alpha_2)=\frac{1}{2}K_{11}\alpha_1^2+\frac{1}{2}K_{22}\alpha_2^2+y_1 y_2 K_{12} \alpha_1 \alpha_2 \nonumber\\
+    -(\alpha_1+\alpha_2) +y_1 \alpha_1\sum_{i=3}^{N} y_i \alpha_i K_{i1} +y_2 \alpha_2 \sum_{i=3}^{N}y_i \alpha_i K_{i2}  \label{eq:temption}\\
+    s.t.\quad \alpha_i y_i+\alpha_2 y_2=-\sum_{i=3}^{N}y_i \alpha_i=\varsigma   \label{eq:relation12}\\
+    0\le \alpha_i \le C,\quad i=1,2
+\end{gather}
+式(\ref{eq:relation12})同时乘上$y_1$
+\begin{gather}
+    \alpha_1 y_1^2+\alpha_2 y_1 y_2=y_1 \varsigma\\
+    \alpha_1=y_1(\varsigma-\alpha_2 y_2)
+\end{gather}
+
+代入(\ref{eq:temption}),
+\begin{gather}
+    W(\alpha_2)=\frac{1}{2} K_{11}(\varsigma-\alpha_2 y_2)^2 +\frac{1}{2}K_{22}\alpha_2^2+K_{12} y_2 (\varsigma-\alpha_2 y_2)\alpha_2-y_1 \varsigma+(y_1 y_2-1) \alpha_2 \nonumber\\
+    +(\varsigma-\alpha_2 y_2) \sum_{i=1}^{N}y_i \alpha_i K_{i1}+y_2 \alpha_2 \sum_{i=3}^{N}y_i \alpha_i K_{i2}
+\end{gather}
+在这里，令$v_1=\sum_{i=1}^{N}y_i \alpha_i K_{i1}$,$v_2=\sum_{i=3}^{N}y_i \alpha_i K_{i2}$
+上式可化简为
+\begin{gather}
+    W(\alpha_2)=\frac{1}{2} K_{11}(\varsigma-\alpha_2 y_2)^2 +\frac{1}{2}K_{22}\alpha_2^2+K_{12} y_2 (\varsigma-\alpha_2 y_2)\alpha_2 \nonumber\\
+    -y_1 (\varsigma-\alpha_2 y_2)- \alpha_2+v_1(\varsigma-\alpha_2 y_2)+y_2 v_2 \alpha_2 
+\end{gather}
+
+$W(\alpha_2)$对$\alpha_2$求导数得到：
+\begin{gather}
+    \frac{\partial W}{\partial \alpha_2}=K_{11}y_2(\alpha_2 y_2 -\varepsilon)+K_{22}\alpha_2 +y_2 K_{12}\varsigma-2K_{12}\alpha_2+y_1 y_2 -1-v_1y_2+y_2 v_2 \nonumber\\
+    =K_{11}\alpha_2 +K_{22}\alpha_2 -2K_{12}\alpha_2-K_{11}\varsigma y_2+K_{12}\varsigma y_2+y_1 y_2 -1-v_1y_2+y_2 v_2 \label{eq:partial}
+\end{gather}
+令其为0，又考虑到SVM对数据点的预测值为
+\begin{equation}
+    {\color{red}g(x)=\sum_{i=1}^{N}\alpha_i y_i K(x_i,x) +b}
+\end{equation}
+在此，令
+\begin{equation}
+    {\color{red}E_i=g(x_i)-y_i=(\sum_{j=1}^{N}\alpha_j y_j K(x_j,x_i) +b)-y_i,\quad i=1,2} \label{eq:E}
+\end{equation}
+令(\ref{eq:partial})为0,并将$\varsigma=\alpha_1^{old} y_1+\alpha_2^{old} y_2$代入，
+得到
+\begin{equation}
+    (K_{11}+K_{22}-2K_{12})\alpha_2^{new,unc}=(K_{11}+K_{22}-2K_{12})\alpha_2^{old}+y_2(E_1-E_2)
+\end{equation}
+将$\eta=K_{11}+K_{22}-2K_{12}$ 代入，有
+\begin{equation}
+    \alpha_2^{new,unc}=\alpha_2^{old}+\frac{y_2(E_1-E_2)}{\eta}
+\end{equation}
+
+
+还需要对原始解进行修剪
+
+当$y_1\neq y_2$时，上下界表示为:
+
+下界：$L=max(0,\alpha_2^{old}-\alpha_1^{pld})$\quad
+上界：$H=min(C,C+\alpha_2^{old}-\alpha_1^{old})$
+
+当$y_1\neq y_2$时，上下界表示为:
+
+下界：$L=max(0,\alpha_2^{old}+\alpha_1^{pld}-C)$\quad
+上界：$H=min(C,\alpha_2^{old}+\alpha_1^{old})$
+
+经过修剪后的$\alpha_2$：
+\[
+  \alpha_2^{new} = 
+  \begin{cases}
+    H, &\text{$\alpha_2^{new,unclipped}>H$}\\
+    \alpha_2^{new,unclipped},&\text{$L\le\alpha_2^{new,unclipped}\le H$}\\
+	L, &\text{$\alpha_2^{new,unclipped}<L$}
+  \end{cases}
+\]
+
+又因为公式
+\begin{equation}
+    \alpha_1^{old}y_1 +\alpha_2^{old}y_2=\alpha_1^{new}y_1 +\alpha_2^{new}y_2=\varsigma
+\end{equation}
+我们可以计算出$\alpha_1^{new}$
+
+\subsection{变量选择的方法}
+\subsubsection{阈值b的更新}
+当$0<\alpha_1^{new}<C$时,
+\begin{equation}
+    b_1^{new}=y_1-\sum_{i=3}^{N}\alpha_i y_i K_{i1}-\alpha_1^{new} y_1 K_{11}-\alpha_2^{new} y_2 K_{21}\label{eq:b1new}
+\end{equation}
+由式(\ref{eq:E})式我们可以得到
+\begin{align}
+    E_1&=(\sum_{j=1}^{N}\alpha_j y_j K(x_j,x_1)+b^{old})-y_1\\
+    &=\sum_{i=3}^{N}\alpha_i y_i K_{i1}+\alpha_1^{old} y_1 K_{11}+\alpha_2^{old} y_2 K_{21}+b^{old}-y_1
+\end{align}
+由此可得
+\begin{equation}
+    y_1-\sum_{i=3}^{N}\alpha_i y_i K_{i1}=-E_1+\alpha_1^{old} y_1 K_{11} +\alpha_2^{old} y_2 K_{21} +b^{old}
+\end{equation}
+代入式(\ref{eq:b1new})，得
+\begin{equation}
+    b_1^{new}=-E_1-y_1 K_{11}(\alpha_1^{new}-\alpha_1^{old})-y_2 K_{21}(\alpha_2^{new}-\alpha_2^{old})+b^{old}
+\end{equation}
+同理，当$0<\alpha_2^{new}<C$时,有：
+\begin{equation}
+    b_2^{new}=-E_2-y_1 K_{12}(\alpha_1^{new}-\alpha_1^{old})-y_2 K_{22}(\alpha_2^{new}-\alpha_2^{old})+b^{old}
+\end{equation}
+
+并且，每次对两个变量进行优化之后，还需要更新对应的$E_i$值，并将它们保存在列表中：
+\begin{equation}
+    E_i^{new}=\sum_{S} y_j \alpha_j K(x_i,x_j)+b^{new}-y_i
+\end{equation}
+其中，S是所有支持向量的集合
+\end{document}
+
+
